@@ -6,4 +6,4 @@ def convertDf(filename):
     return df
 
 def outputDf(df, filename):
-    df.to_csv(filename, sep='\t', index=False)
+    df.to_csv(filename, encoding='utf-8', index=False)
