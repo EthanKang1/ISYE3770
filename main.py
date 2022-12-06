@@ -78,9 +78,10 @@ def getPosDelta():
         segmentDf = newDf[newDf["qualifyingPosition"] == qualPos].copy()
         valueCountDf = segmentDf["resultPosition"].value_counts().to_frame()
         valueCountDf.reset_index(inplace=True)
-        valueCountDf.sort_values(by=['index'], inplace=True)
+        valueCountDf.rename({'index': "Starting Qualifying Position", "resultPosition": "Frequency of Resulting Position"}, axis='columns', inplace=True)
+        valueCountDf.sort_values(by=['Starting Qualifying Position'], inplace=True)
         # print(valueCountDf)
-        ax = valueCountDf.plot.bar(x='index', y='resultPosition', rot=0)
+        ax = valueCountDf.plot.bar(x='Starting Qualifying Position', y='Frequency of Resulting Position', rot=0)
 
         plt.show()
         ax.get_figure().savefig('output/positionDelta/qual_' + str(qualPos) + '.jpg')
