@@ -42,4 +42,33 @@ def getLapTimeStatsPerRace():
 
     csv2df.outputDf(aggregateDf, "output/aggregateLapTimeStatsPerRace.csv")
 
-getLapTimeStatsPerRace()
+
+def getPosDelta():
+
+    # get datasets
+    qualifyingDataset = csv2df.convertDf("dataset/qualifying.csv")
+    resultsDataset = csv2df.convertDf("dataset/results.csv")
+
+    qualifyingDataset.drop(['number', 'q1', 'q2', 'q3'], axis=1, inplace=True)
+    qualifyingDataset.rename({'position': "qualifyingPosition"}, axis='columns', inplace=True)
+
+    resultsDataset.drop(['number', 'positionText', 'positionOrder', 'points', 'laps',
+                         'time', 'milliseconds', 'fastestLap', 'rank', 'fastestLapTime',
+                         'fastestLapSpeed', 'statusId'], axis=1, inplace=True)
+    resultsDataset.rename({'position': "resultPosition"}, axis='columns', inplace=True)
+
+    newDf = pd.merge(resultsDataset, qualifyingDataset,  how='left', on = ['raceId', 'driverId', 'constructorId'])
+
+    # newDf['qualifyingPosition'].replace(['\\N'], '9999999999999', inplace=True)
+    # newDf['resultPosition'].replace(['\\N'], '-9999999999999', inplace=True)
+    newDf = newDf[newDf["qualifyingPosition"] != "\\N"]
+    newDf = newDf[newDf["resultPosition"] != "\\N"]
+
+    newDf["qualifyingPosition"] = pd.to_numeric(newDf["qualifyingPosition"])
+    newDf["resultPosition"] = pd.to_numeric(newDf["resultPosition"])
+    newDf['PosDelta'] = newDf['resultPosition'].sub(newDf['qualifyingPosition'], axis = 0)
+
+    csv2df.outputDf(newDf, "output/rawPositionDelta.csv")
+
+
+getPosDelta()
