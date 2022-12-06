@@ -1,4 +1,5 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from utils import csv2df
 
@@ -73,7 +74,16 @@ def getPosDelta():
 
     # group by quali position
     uniqueQualPositions = newDf['qualifyingPosition'].unique().tolist()
-    print(uniqueQualPositions)
+    for qualPos in uniqueQualPositions:
+        segmentDf = newDf[newDf["qualifyingPosition"] == qualPos].copy()
+        valueCountDf = segmentDf["resultPosition"].value_counts().to_frame()
+        valueCountDf.reset_index(inplace=True)
+        valueCountDf.sort_values(by=['index'], inplace=True)
+        # print(valueCountDf)
+        ax = valueCountDf.plot.bar(x='index', y='resultPosition', rot=0)
+
+        plt.show()
+        ax.get_figure().savefig('output/positionDelta/qual_' + str(qualPos) + '.jpg')
 
 
 getPosDelta()
