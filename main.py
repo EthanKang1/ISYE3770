@@ -1,5 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
+from scipy import stats
 
 from utils import csv2df
 
@@ -19,6 +21,7 @@ def getLapTimeStatsPerRace():
     lapTimesPerRace = dict(tuple(lapTimesDataset.groupby('raceId')))
 
     aggregate = []
+    whiskerComp = {}
     for index, raceDataset in lapTimesPerRace.items():
         tempDf = racesDataset.loc[racesDataset['raceId'] == index].copy()
         tempDf.drop(['name', 'date', 'time', 'url', 'fp1_date',
@@ -39,6 +42,23 @@ def getLapTimeStatsPerRace():
 
         aggregate.append(statDf)
 
+        whiskerDf = raceDataset[["milliseconds"]].copy()
+        whiskerDf.reset_index(inplace=True, drop=True)
+        whiskerDf.rename({'milliseconds': raceId}, axis="columns", inplace=True)
+
+        if circuitId not in whiskerComp.keys():
+            whiskerComp[circuitId] = pd.DataFrame()
+        whiskerComp[circuitId][raceId] = whiskerDf[raceId]
+
+        # print(whiskerComp)
+
+        # whiskerDf.rename(columns={'index': 'circuitId'}, inplace=True)
+        # whiskerComp
+        # print(whiskerDf)
+
+        # testing printing out box whisker plot
+
+
     aggregateDf = pd.concat(aggregate)
 
 
@@ -47,10 +67,26 @@ def getLapTimeStatsPerRace():
 
     # print(uniqueCircuitIds)
 
-    for circuitId in uniqueCircuitIds:
-        segmentDf = aggregateDf[aggregateDf["circuitId"] == circuitId].copy()
+    # for circuitId in uniqueCircuitIds:
+    #     segmentDf = aggregateDf[aggregateDf["circuitId"] == circuitId].copy()
+    #
+    #     csv2df.outputDf(segmentDf, "output/circuitStatsOverTime/" + str(circuitId) + ".csv")
 
-        csv2df.outputDf(segmentDf, "output/circuitStatsOverTime/" + str(circuitId) + ".csv")
+
+    for circuitId in whiskerComp.keys():
+        tempDf = whiskerComp[circuitId]
+
+        # tempDf[(np.abs(stats.zscore(tempDf)) < 3).all(axis=1)]
+
+        Q1 = tempDf.quantile(0.25)
+        Q3 = tempDf.quantile(0.75)
+        IQR = Q3 - Q1
+
+        tempDf = tempDf[~((tempDf < (Q1 - 1.5 * IQR)) |(tempDf > (Q3 + 1.5 * IQR))).any(axis=1)]
+
+        ax = tempDf.plot.box()
+        plt.show()
+        ax.get_figure().savefig('output/circuitStatsOverTime/' + str(circuitId) + '.jpg')
 
 
     csv2df.outputDf(aggregateDf, "output/aggregateLapTimeStatsPerRace.csv")
