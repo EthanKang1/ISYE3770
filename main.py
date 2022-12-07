@@ -41,6 +41,18 @@ def getLapTimeStatsPerRace():
 
     aggregateDf = pd.concat(aggregate)
 
+
+    # group by quali position
+    uniqueCircuitIds = aggregateDf['circuitId'].unique().tolist()
+
+    # print(uniqueCircuitIds)
+
+    for circuitId in uniqueCircuitIds:
+        segmentDf = aggregateDf[aggregateDf["circuitId"] == circuitId].copy()
+
+        csv2df.outputDf(segmentDf, "output/circuitStatsOverTime/" + str(circuitId) + ".csv")
+
+
     csv2df.outputDf(aggregateDf, "output/aggregateLapTimeStatsPerRace.csv")
 
 
@@ -58,7 +70,7 @@ def getPosDelta():
                          'fastestLapSpeed', 'statusId'], axis=1, inplace=True)
     resultsDataset.rename({'position': "resultPosition"}, axis='columns', inplace=True)
 
-    newDf = pd.merge(resultsDataset, qualifyingDataset,  how='left', on = ['raceId', 'driverId', 'constructorId'])
+    newDf = pd.merge(resultsDataset, qualifyingDataset,  how='left', on=['raceId', 'driverId', 'constructorId'])
 
     # dataset cleaning
     newDf = newDf[newDf["qualifyingPosition"] != "\\N"]
@@ -87,4 +99,29 @@ def getPosDelta():
         ax.get_figure().savefig('output/positionDelta/qual_' + str(qualPos) + '.jpg')
 
 
-getPosDelta()
+def getPosPitImpact():
+
+    # get datasets
+    pitDataset = csv2df.convertDf("dataset/pit_stops.csv")
+    resultsDataset = csv2df.convertDf("dataset/results.csv")
+
+    # clean dataset
+    pitDataset.drop(['lap', 'time', 'duration'], axis=1, inplace=True)
+    # pitDataset.rename({'position': "qualifyingPosition"}, axis='columns', inplace=True)
+
+    print(pitDataset)
+
+    ## ONLY EVALUATING RACES WITH 1 PITSTOP, REMOVE RACES WITH >1 PIT
+    segmentDf = pitDataset[pitDataset["stop"] != 1].copy()
+    join = pd.merge(pitDataset, segmentDf, how='outer', on=['raceId', 'driverId'], indicator=True)
+    print(join)
+
+    testDf = join[join["_merge"] == "left_only"].copy()
+    testDf.drop(['stop_x', 'stop_y', "milliseconds_y", '_merge'], axis=1, inplace=True)
+    # testDf.rename({'s': "qualifyingPosition"}, axis='columns', inplace=True)
+
+
+    csv2df.outputDf(testDf, "output/test.csv")
+
+
+getLapTimeStatsPerRace()
