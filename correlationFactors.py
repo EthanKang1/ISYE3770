@@ -112,6 +112,43 @@ def fastestLapTimeCorrelation():
 
     historicalCorrelation(x, y, "regressionOutput/historical/fastestLapTimeCorrelation.png")
 
+def fastestLapSpeedCorrelationByYear():
+    resultsDataset = utilFunc.getDataset("results")
+    racesDataset = utilFunc.getDataset("races")
+
+    resultsDataset = resultsDataset[resultsDataset['position'] != "\\N"]
+    resultsDataset = resultsDataset[resultsDataset['fastestLapSpeed'] != "\\N"]
+
+    resultsDataset["year"] = resultsDataset["raceId"].apply(lambda x: racesDataset.get(x)["year"])
+
+    coefficient = pd.DataFrame()
+
+    for uniqueYear in utilFunc.getUniqueYears():
+        subset = resultsDataset[resultsDataset["year"] == uniqueYear]
+
+        x = subset['position'].astype(float)
+        y = subset['fastestLapSpeed'].astype(float)
+
+        if (x.empty or y.empty):
+            print(uniqueYear)
+            continue
+
+        regr = linear_model.LinearRegression()
+        regr.fit(x.values.reshape(-1, 1), y)
+
+        print('Intercept: \n', regr.intercept_)
+        print('Coefficients: \n', regr.coef_)
+
+        x = sm.add_constant(x)
+
+        model = sm.OLS(y, x).fit()
+        predictions = model.predict(x)
+
+        coefficient = coefficient.append({'Year': uniqueYear, 'FastestLapSpeed_R2': model.rsquared, 'FastestLapSpeed_Coeff': regr.coef_[0], 'FastestLapSpeed_Inter': regr.intercept_}, ignore_index = True)
+
+    print(coefficient)
+    csv2df.outputDf(coefficient, "regressionOutput/byYear/fastestLapSpeed.csv")
+
 def fastestLapSpeedCorrelation():
     resultsDataset = utilFunc.getDataset("results")
     resultsDataset = resultsDataset[resultsDataset['position'] != "\\N"]
@@ -138,4 +175,4 @@ def historicalCorrelation(independent, dependent, filename):
 
     utilFunc.summaryToImage(print_model, filename)
 
-positionCorrelationByYear()
+fastestLapSpeedCorrelationByYear()
