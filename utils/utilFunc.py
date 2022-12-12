@@ -1,5 +1,7 @@
 import pandas as pd
 from utils import csv2df
+import matplotlib.pyplot as plt
+
 
 # Takes in a series formatted as M:SS:lll
 def convertDatetimeStrToMilli(series):
@@ -62,5 +64,18 @@ def getDataset(dataset):
                                                               "fastestLapTime",
                                                               "fastestLapSpeed"]]
         output = df.copy()
+
+    return output
+
+def summaryToImage(model, filename):
+    plt.rc('figure', figsize=(12, 7))
+    plt.text(0.01, 0.05, str(model), {'fontsize': 14}, fontproperties = 'monospace') # approach improved by OP -> monospace!
+    plt.axis('off')
+    plt.tight_layout()
+    plt.savefig(filename)
+
+def getUniqueYears():
+    df = csv2df.convertDf("dataset/races.csv")
+    output = df['year'].unique().tolist()
 
     return output
