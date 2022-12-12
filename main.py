@@ -7,7 +7,7 @@ from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
 from sklearn import linear_model
 import statsmodels.api as sm
 
-from utils import csv2df, converters
+from utils import csv2df, utilFunc
 
 
 def getLapTimeStatsPerRace():
@@ -178,18 +178,7 @@ def linearRegressionTest():
         subset = resultsDataset[resultsDataset['fastestLapTime'] != "\\N"]
 
 
-        # add year as variable
-        # show correlation over time
-        # team performance over year
-        # driver performance correlated with age
-        # nationality correlation with performacne
-        # month born with performance
-        # probability of winning based off 1/2 stop (analyze historical and per circuit)
-
-        ## factors that go into result
-        # correlations over time across multiple factors
-
-        subset['millisecondFastestLap'] = converters.convertDatetimeStrToMilli(subset['fastestLapTime']).copy()
+        subset['millisecondFastestLap'] = utilFunc.convertDatetimeStrToMilli(subset['fastestLapTime']).copy()
 
         fig, ax = plt.subplots()
 
