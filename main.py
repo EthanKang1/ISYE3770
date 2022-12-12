@@ -2,8 +2,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import stats
+from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
+                               AutoMinorLocator)
+from sklearn import linear_model
+import statsmodels.api as sm
 
-from utils import csv2df
+from utils import csv2df, converters
 
 
 def getLapTimeStatsPerRace():
@@ -159,5 +163,68 @@ def getPosPitImpact():
 
     csv2df.outputDf(testDf, "output/test.csv")
 
+def linearRegressionTest():
+    # get lap times dataset
+    resultsDataset = csv2df.convertDf("dataset/results.csv")
 
-getLapTimeStatsPerRace()
+    resultsDataset = resultsDataset.head(100)
+
+    print(resultsDataset)
+
+    uniqueRaceId = resultsDataset['raceId'].unique().tolist()
+    for raceId in uniqueRaceId:
+        subset = resultsDataset[resultsDataset['raceId'] == raceId]
+        subset = resultsDataset[resultsDataset['fastestLapSpeed'] != "\\N"]
+        subset = resultsDataset[resultsDataset['fastestLapTime'] != "\\N"]
+
+
+        # add year as variable
+        # show correlation over time
+        # team performance over year
+        # driver performance correlated with age
+        # nationality correlation with performacne
+        # month born with performance
+        # probability of winning based off 1/2 stop (analyze historical and per circuit)
+
+        ## factors that go into result
+        # correlations over time across multiple factors
+
+        subset['millisecondFastestLap'] = converters.convertDatetimeStrToMilli(subset['fastestLapTime']).copy()
+
+        fig, ax = plt.subplots()
+
+        plt.scatter(subset['fastestLapSpeed'], subset['positionOrder'], color='red')
+        plt.title('positionOrder Vs fastestLapSpeed', fontsize=14)
+        plt.xlabel('fastestLapSpeed', fontsize=14)
+        plt.ylabel('positionOrder', fontsize=14)
+        plt.grid(False)
+
+        # ax.xaxis.set_major_locator(MultipleLocator(20))
+        # ax.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+
+        plt.show()
+
+        x = subset[['fastestLapSpeed', 'millisecondFastestLap']].astype(float)
+        y = subset['positionOrder']
+
+        # with sklearn
+        regr = linear_model.LinearRegression()
+        regr.fit(x, y)
+
+        print('Intercept: \n', regr.intercept_)
+        print('Coefficients: \n', regr.coef_)
+
+        # with statsmodels
+        x = sm.add_constant(x) # adding a constant
+
+        model = sm.OLS(y, x).fit()
+        predictions = model.predict(x)
+
+        print_model = model.summary()
+        print(print_model)
+        break
+
+
+# getLapTimeStatsPerRace()
+
+linearRegressionTest()
