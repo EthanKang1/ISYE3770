@@ -1,5 +1,6 @@
 import pandas as pd
 from utils import csv2df, utilFunc
+import matplotlib.pyplot as plt
 
 def getLapTimeStatsPerRace():
 
@@ -69,6 +70,7 @@ def getLapTimeStatsPerRace():
         subset = aggregateDf[aggregateDf["circuitId"] == uniqueCircuit]
         uniqueCircuitName = circuitsDataset[uniqueCircuit]["name"].replace(" ", "")
 
+        # table generation
         csv2df.outputDf(subset, "tableOutput/byCircuit/" + uniqueCircuitName + "_lapTimeStats.csv")
 
     csv2df.outputDf(aggregateDf, "tableOutput/lapTimeStats_PerRace.csv")
