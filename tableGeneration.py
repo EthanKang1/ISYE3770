@@ -75,5 +75,35 @@ def getLapTimeStatsPerRace():
 
     csv2df.outputDf(aggregateDf, "tableOutput/lapTimeStats_PerRace.csv")
 
+def topDriversPerCircuit():
+    resultsDataset = utilFunc.getDataset("results")
+    racesDataset = utilFunc.getDataset("races")
+    circuitsDataset = utilFunc.getDataset("circuits")
 
-getLapTimeStatsPerRace()
+    resultsDataset["circuitId"] = resultsDataset["raceId"].apply(lambda x: racesDataset.get(x)["circuitId"])
+
+    uniqueCircuits = resultsDataset['circuitId'].unique().tolist()
+
+    for uniqueCircuit in uniqueCircuits:
+        subset = resultsDataset[resultsDataset["circuitId"] == uniqueCircuit]
+        uniqueCircuitName = circuitsDataset[uniqueCircuit]["name"].replace(" ", "")
+        uniqueDrivers = subset['driverId'].unique().tolist()
+        driverPlacementDf = pd.DataFrame(uniqueDrivers, columns=['driverId'])
+        driverPlacementDf["placements"] = ""
+
+        uniqueRaces = subset['raceId'].unique().tolist()
+        for uniqueRace in uniqueRaces:
+            subsubset = subset[subset["raceId"] == uniqueRace][['driverId', 'position']]
+            subsubset = subsubset[subsubset["position"] != '\\N']
+            driverPlacementDf = pd.merge(driverPlacementDf, subsubset,  how='left', on=['driverId']).fillna("")
+            driverPlacementDf["placements"] = driverPlacementDf["placements"] + "," + driverPlacementDf["position"]
+            driverPlacementDf.drop('position', axis=1, inplace=True)
+
+        for pos in range(1, 25):
+            driverPlacementDf["pos_" + str(pos)] = driverPlacementDf["placements"].str.count("," + str(pos) + ",")
+        driverPlacementDf.drop('placements', axis=1, inplace=True)
+
+        csv2df.outputDf(driverPlacementDf, "tableOutput/byCircuit/placements/" + uniqueCircuitName + "_placements.csv")
+
+
+topDriversPerCircuit()
