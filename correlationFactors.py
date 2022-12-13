@@ -66,7 +66,6 @@ def fastestLapSpeedCorrelation():
 def numOfPitCorrelation():
     resultsDataset = utilFunc.getDataset("results")
     resultsDataset = resultsDataset[resultsDataset['position'] != "\\N"]
-    resultsDataset = resultsDataset[resultsDataset['fastestLapSpeed'] != "\\N"]
 
     pitsDataset = utilFunc.getDataset("pit_stops")
 
@@ -271,15 +270,37 @@ def multipleHistoricalCorrelation():
     resultsDataset = resultsDataset[resultsDataset['position'] != "\\N"]
     resultsDataset = resultsDataset[resultsDataset['grid'] != "\\N"]
     resultsDataset = resultsDataset[resultsDataset['fastestLapTime'] != "\\N"]
+    resultsDataset = resultsDataset[resultsDataset['fastestLapSpeed'] != "\\N"]
 
     # fastest lap time data
     resultsDataset['fastestLapTime'] = utilFunc.convertDatetimeStrToMilli(resultsDataset['fastestLapTime'])
 
+    # num of pit data
+    pitsDataset = utilFunc.getDataset("pit_stops")
+    driverPits = pd.DataFrame()
+    uniqueRaces = pitsDataset['raceId'].unique().tolist()
+    for uniqueRace in uniqueRaces:
+        subset = pitsDataset[pitsDataset['raceId'] == uniqueRace]
+        uniqueDrivers = subset['driverId'].unique().tolist()
+
+        for uniqueDriver in uniqueDrivers:
+            uniqueDriverPitCount = len(subset[subset['driverId'] == uniqueDriver])
+            uniqueDriverPitTime = subset[subset['driverId'] == uniqueDriver]['milliseconds'].sum()
+            driverPits = driverPits.append({'raceId': uniqueRace, 'driverId': uniqueDriver, 'pitCount': uniqueDriverPitCount, 'pitTime': uniqueDriverPitTime}, ignore_index = True)
+    driverPits['raceId'] = driverPits['raceId'].astype(int)
+    driverPits['driverId'] = driverPits['driverId'].astype(int)
+    driverPits['pitCount'] = driverPits['pitCount'].astype(int)
+    driverPits['pitTime'] = driverPits['pitTime'].astype(int)
+
+    resultsDataset = pd.merge(resultsDataset, driverPits,  how='left', on=['raceId', 'driverId'])
+    resultsDataset = resultsDataset[resultsDataset['pitCount'].notna()]
+
     resultsDataset['position'] = resultsDataset['position'].astype(float)
     resultsDataset['grid'] = resultsDataset['grid'].astype(float)
     resultsDataset['fastestLapTime'] = resultsDataset['fastestLapTime'].astype(float)
+    resultsDataset['fastestLapSpeed'] = resultsDataset['fastestLapSpeed'].astype(float)
 
-    x = resultsDataset[['grid','fastestLapTime']]
+    x = resultsDataset[['grid','fastestLapTime', 'fastestLapSpeed', 'pitCount', 'pitTime']]
     y = resultsDataset['position']
 
     # with sklearn
@@ -296,6 +317,6 @@ def multipleHistoricalCorrelation():
     predictions = model.predict(x)
 
     print_model = model.summary()
-    utilFunc.summaryToImage(print_model, "regressionOutput/historical/grid+fastestlaptime.png")
+    utilFunc.summaryToImage(print_model, "regressionOutput/historical/grid+fastestlaptime+fastestlapspeed+pitcount+pittime.png")
 
 multipleHistoricalCorrelation()
