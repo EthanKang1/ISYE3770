@@ -262,8 +262,8 @@ def correlationByYear(independent_name, dependent_name, dataset):
         coefficient = coefficient.append({'Year': uniqueYear, dependent_name + '_R2': model.rsquared, dependent_name + 'Coeff': regr.coef_[0], dependent_name + '_Inter': regr.intercept_}, ignore_index = True)
 
     print(coefficient)
+    coefficient.sort_values(by='Year', ascending=True, inplace=True)
     csv2df.outputDf(coefficient, "regressionOutput/byYear/" + dependent_name + ".csv")
-
 
 def multipleHistoricalCorrelation():
     resultsDataset = utilFunc.getDataset("results")
@@ -319,4 +319,8 @@ def multipleHistoricalCorrelation():
     print_model = model.summary()
     utilFunc.summaryToImage(print_model, "regressionOutput/historical/grid+fastestlaptime+fastestlapspeed+pitcount+pittime.png")
 
-multipleHistoricalCorrelation()
+positionCorrelationByYear()
+fastestLapTimeCorrelationByYear()
+fastestLapSpeedCorrelationByYear()
+numOfPitCorrelationByYear()
+pitTimeCorrelationByYear()

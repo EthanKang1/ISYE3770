@@ -81,5 +81,29 @@ def createLapTimeStatsFigures():
     #     plt.show()
     #     ax.get_figure().savefig('output/circuitStatsOverTime/' + str(circuitId) + '.jpg')
 
+def correlationFiveOverTime():
+    fastestLapSpeedDataset = csv2df.convertDf("regressionOutput/byYear/fastestLapSpeed.csv")
+    fastestLapTimeDataset = csv2df.convertDf("regressionOutput/byYear/fastestLapTime.csv")
+    gridDataset = csv2df.convertDf("regressionOutput/byYear/grid.csv")
+    pitCountDataset = csv2df.convertDf("regressionOutput/byYear/pitCount.csv")
+    pitTimeDataset = csv2df.convertDf("regressionOutput/byYear/pitTime.csv")
 
-createLapTimeStatsFigures()
+    df = gridDataset[['Year', 'grid_R2']].copy()
+    df = pd.merge(df, fastestLapTimeDataset,  how='left', on=['Year'])
+    df = pd.merge(df, fastestLapSpeedDataset,  how='left', on=['Year'])
+    df = pd.merge(df, pitCountDataset,  how='left', on=['Year'])
+    df = pd.merge(df, pitTimeDataset,  how='left', on=['Year'])
+
+    df = df[['Year', 'grid_R2', 'fastestLapTime_R2', 'fastestLapSpeed_R2', 'pitCount_R2', 'pitTime_R2']]
+
+    df.set_index('Year', inplace=True)
+    df.sort_index(ascending=True, inplace=True)
+
+    print(df)
+
+    lines = df.plot.line()
+
+    plt.show()
+
+correlationFiveOverTime()
+
