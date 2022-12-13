@@ -265,4 +265,37 @@ def correlationByYear(independent_name, dependent_name, dataset):
     print(coefficient)
     csv2df.outputDf(coefficient, "regressionOutput/byYear/" + dependent_name + ".csv")
 
-pitTimeCorrelationByYear()
+
+def multipleHistoricalCorrelation():
+    resultsDataset = utilFunc.getDataset("results")
+    resultsDataset = resultsDataset[resultsDataset['position'] != "\\N"]
+    resultsDataset = resultsDataset[resultsDataset['grid'] != "\\N"]
+    resultsDataset = resultsDataset[resultsDataset['fastestLapTime'] != "\\N"]
+
+    # fastest lap time data
+    resultsDataset['fastestLapTime'] = utilFunc.convertDatetimeStrToMilli(resultsDataset['fastestLapTime'])
+
+    resultsDataset['position'] = resultsDataset['position'].astype(float)
+    resultsDataset['grid'] = resultsDataset['grid'].astype(float)
+    resultsDataset['fastestLapTime'] = resultsDataset['fastestLapTime'].astype(float)
+
+    x = resultsDataset[['grid','fastestLapTime']]
+    y = resultsDataset['position']
+
+    # with sklearn
+    regr = linear_model.LinearRegression()
+    regr.fit(x, y)
+
+    print('Intercept: \n', regr.intercept_)
+    print('Coefficients: \n', regr.coef_)
+
+    # with statsmodels
+    x = sm.add_constant(x) # adding a constant
+
+    model = sm.OLS(y, x).fit()
+    predictions = model.predict(x)
+
+    print_model = model.summary()
+    utilFunc.summaryToImage(print_model, "regressionOutput/historical/grid+fastestlaptime.png")
+
+multipleHistoricalCorrelation()
