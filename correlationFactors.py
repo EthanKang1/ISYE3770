@@ -93,6 +93,35 @@ def numOfPitCorrelation():
 
     historicalCorrelation(x, y, "regressionOutput/historical/numOfPitCorrelation.png")
 
+def pitTimeCorrelation():
+    resultsDataset = utilFunc.getDataset("results")
+    resultsDataset = resultsDataset[resultsDataset['position'] != "\\N"]
+    resultsDataset = resultsDataset[resultsDataset['fastestLapSpeed'] != "\\N"]
+
+    pitsDataset = utilFunc.getDataset("pit_stops")
+
+    # build pit data
+    driverPitTime = pd.DataFrame()
+    uniqueRaces = pitsDataset['raceId'].unique().tolist()
+    for uniqueRace in uniqueRaces:
+        subset = pitsDataset[pitsDataset['raceId'] == uniqueRace]
+        uniqueDrivers = subset['driverId'].unique().tolist()
+
+        for uniqueDriver in uniqueDrivers:
+            uniqueDriverPitTime = subset[subset['driverId'] == uniqueDriver]['milliseconds'].sum()
+            driverPitTime = driverPitTime.append({'raceId': uniqueRace, 'driverId': uniqueDriver, 'pitTime': uniqueDriverPitTime}, ignore_index = True)
+
+    driverPitTime['raceId'] = driverPitTime['raceId'].astype(int)
+    driverPitTime['driverId'] = driverPitTime['driverId'].astype(int)
+    driverPitTime['pitTime'] = driverPitTime['pitTime'].astype(int)
+
+    resultsDataset = pd.merge(resultsDataset, driverPitTime,  how='left', on=['raceId', 'driverId'])
+    resultsDataset = resultsDataset[resultsDataset['pitTime'].notna()]
+
+    x = resultsDataset['position'].astype(float)
+    y = resultsDataset['pitTime'].astype(float)
+
+    historicalCorrelation(x, y, "regressionOutput/historical/pitTimeCorrelation.png")
 
 def positionCorrelationByYear():
     resultsDataset = utilFunc.getDataset("results")
@@ -159,6 +188,35 @@ def numOfPitCorrelationByYear():
 
     correlationByYear('position', 'pitCount', resultsDataset)
 
+def pitTimeCorrelationByYear():
+    resultsDataset = utilFunc.getDataset("results")
+    resultsDataset = resultsDataset[resultsDataset['position'] != "\\N"]
+    resultsDataset = resultsDataset[resultsDataset['fastestLapSpeed'] != "\\N"]
+
+    pitsDataset = utilFunc.getDataset("pit_stops")
+    racesDataset = utilFunc.getDataset("races")
+
+    # build pit data
+    driverPitTime = pd.DataFrame()
+    uniqueRaces = pitsDataset['raceId'].unique().tolist()
+    for uniqueRace in uniqueRaces:
+        subset = pitsDataset[pitsDataset['raceId'] == uniqueRace]
+        uniqueDrivers = subset['driverId'].unique().tolist()
+
+        for uniqueDriver in uniqueDrivers:
+            uniqueDriverPitTime = subset[subset['driverId'] == uniqueDriver]['milliseconds'].sum()
+            driverPitTime = driverPitTime.append({'raceId': uniqueRace, 'driverId': uniqueDriver, 'pitTime': uniqueDriverPitTime}, ignore_index = True)
+
+    driverPitTime['raceId'] = driverPitTime['raceId'].astype(int)
+    driverPitTime['driverId'] = driverPitTime['driverId'].astype(int)
+    driverPitTime['pitTime'] = driverPitTime['pitTime'].astype(int)
+
+    resultsDataset = pd.merge(resultsDataset, driverPitTime,  how='left', on=['raceId', 'driverId'])
+    resultsDataset = resultsDataset[resultsDataset['pitTime'].notna()]
+
+    resultsDataset["year"] = resultsDataset["raceId"].apply(lambda x: racesDataset.get(x)["year"])
+
+    correlationByYear('position', 'pitTime', resultsDataset)
 
 def historicalCorrelation(independent, dependent, filename):
     regr = linear_model.LinearRegression()
@@ -207,4 +265,4 @@ def correlationByYear(independent_name, dependent_name, dataset):
     print(coefficient)
     csv2df.outputDf(coefficient, "regressionOutput/byYear/" + dependent_name + ".csv")
 
-numOfPitCorrelationByYear()
+pitTimeCorrelationByYear()
