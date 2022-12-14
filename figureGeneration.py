@@ -82,9 +82,11 @@ def correlationFiveOverTime():
     print(df)
 
     ax = df.plot.line()
-
+    plt.title("Correlation of Various Factors to Race Performance")
+    plt.xlabel("Year")
+    plt.ylabel("R-Squared")
     plt.show()
     ax.get_figure().savefig('figureOutput/correlationFactors.jpg')
 
-createLapTimeStatsFigures()
+correlationFiveOverTime()
 
