@@ -78,9 +78,10 @@ def correlationFiveOverTime():
 
     print(df)
 
-    lines = df.plot.line()
+    ax = df.plot.line()
 
     plt.show()
+    ax.get_figure().savefig('figureOutput/correlationFactors.jpg')
 
-createLapTimeStatsFigures()
+correlationFiveOverTime()
 
