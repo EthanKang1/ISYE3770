@@ -31,7 +31,7 @@ def createLapTimeStatsFigures():
         IQR = Q3 - Q1
 
         tempDf = tempDf[~((tempDf < (Q1 - 1.5 * IQR)) |(tempDf > (Q3 + 1.5 * IQR))).any(axis=1)]
-
+        tempDf = tempDf.reindex(sorted(tempDf.columns), axis=1)
         # tempDf.reset_index(inplace=True)
 
         rotationDf = tempDf.T
@@ -39,20 +39,18 @@ def createLapTimeStatsFigures():
 
         rotationDf['year'] = rotationDf["index"].apply(lambda x: racesDataset.get(x)["year"])
         rotationDf.drop('index', axis=1, inplace=True)
-        print(rotationDf)
         rotationDf = rotationDf.T
-        print(rotationDf)
         rotationDf.columns = rotationDf.iloc[-1]
         rotationDf.drop(rotationDf.index[-1], inplace=True)
         tempDf = rotationDf
 
-        tempDf = tempDf.reindex(sorted(tempDf.columns), axis=1)
+        # print(tempDf.columns)
+        tempDf.columns = tempDf.columns.astype(int)
 
         ax = tempDf.plot.box()
-        ax.xaxis.set_major_locator(ticker.AutoLocator())
+        ax.xaxis.set_major_locator(ticker.MultipleLocator(2))
         plt.show()
         ax.get_figure().savefig('figureOutput/byCircuit/' + uniqueCircuitName + '_lapTimeStats.jpg')
-
 
 def correlationFiveOverTime():
     fastestLapSpeedDataset = csv2df.convertDf("regressionOutput/byYear/fastestLapSpeed.csv")
