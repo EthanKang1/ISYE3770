@@ -54,6 +54,9 @@ def createLapTimeStatsFigures():
         except:
             continue
         ax = tempDf.plot.box()
+        plt.title(circuitsDataset[uniqueCircuit]["name"] + " Lap Times")
+        plt.xlabel("Year")
+        plt.ylabel("Lap Time (milliseconds)")
         ax.xaxis.set_major_locator(ticker.MultipleLocator(2))
         plt.show()
         ax.get_figure().savefig('figureOutput/byCircuit/' + uniqueCircuitName + '_lapTimeStats.jpg')
@@ -83,5 +86,5 @@ def correlationFiveOverTime():
     plt.show()
     ax.get_figure().savefig('figureOutput/correlationFactors.jpg')
 
-correlationFiveOverTime()
+createLapTimeStatsFigures()
 
