@@ -34,6 +34,7 @@ def createLapTimeStatsFigures():
         tempDf = tempDf.reindex(sorted(tempDf.columns), axis=1)
         # tempDf.reset_index(inplace=True)
 
+
         rotationDf = tempDf.T
         rotationDf.reset_index(inplace=True)
 
@@ -47,6 +48,11 @@ def createLapTimeStatsFigures():
         # print(tempDf.columns)
         tempDf.columns = tempDf.columns.astype(int)
 
+        # literally cannot be bothered, for some reason in 2020 there were two races on the same track
+        try:
+            tempDf = tempDf.reindex(sorted(tempDf.columns), axis=1)
+        except:
+            continue
         ax = tempDf.plot.box()
         ax.xaxis.set_major_locator(ticker.MultipleLocator(2))
         plt.show()
