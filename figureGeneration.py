@@ -74,7 +74,8 @@ def correlationFiveOverTime():
     df = pd.merge(df, pitCountDataset,  how='left', on=['Year'])
     df = pd.merge(df, pitTimeDataset,  how='left', on=['Year'])
 
-    df = df[['Year', 'grid_R2', 'fastestLapTime_R2', 'fastestLapSpeed_R2', 'pitCount_R2', 'pitTime_R2']]
+    df = df[['Year', 'fastestLapTime_R2', 'fastestLapSpeed_R2', 'pitCount_R2', 'pitTime_R2']]
+    df['Year'] = df['Year'].astype(int)
 
     df.set_index('Year', inplace=True)
     df.sort_index(ascending=True, inplace=True)
@@ -85,8 +86,9 @@ def correlationFiveOverTime():
     plt.title("Correlation of Various Factors to Race Performance")
     plt.xlabel("Year")
     plt.ylabel("R-Squared")
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(2))
     plt.show()
-    ax.get_figure().savefig('figureOutput/correlationFactors.jpg')
+    ax.get_figure().savefig('figureOutput/correlationFactors_wo_grid.jpg')
 
 correlationFiveOverTime()
 

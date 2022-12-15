@@ -300,7 +300,7 @@ def multipleHistoricalCorrelation():
     resultsDataset['fastestLapTime'] = resultsDataset['fastestLapTime'].astype(float)
     resultsDataset['fastestLapSpeed'] = resultsDataset['fastestLapSpeed'].astype(float)
 
-    x = resultsDataset[['grid','fastestLapTime', 'fastestLapSpeed', 'pitCount', 'pitTime']]
+    x = resultsDataset[['fastestLapTime', 'fastestLapSpeed', 'pitCount', 'pitTime']]
     y = resultsDataset['position']
 
     # with sklearn
@@ -317,10 +317,6 @@ def multipleHistoricalCorrelation():
     predictions = model.predict(x)
 
     print_model = model.summary()
-    utilFunc.summaryToImage(print_model, "regressionOutput/historical/grid+fastestlaptime+fastestlapspeed+pitcount+pittime.png")
+    utilFunc.summaryToImage(print_model, "regressionOutput/historical/fastestlaptime+fastestlapspeed+pitcount+pittime.png")
 
-positionCorrelationByYear()
-fastestLapTimeCorrelationByYear()
-fastestLapSpeedCorrelationByYear()
-numOfPitCorrelationByYear()
-pitTimeCorrelationByYear()
+multipleHistoricalCorrelation()
